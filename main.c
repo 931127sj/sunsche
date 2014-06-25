@@ -28,6 +28,7 @@ int main(int argc, char* argv[]){
             // parent
             printf("parent (%d)\n", getpid());
 
+			// random cpu and io time
             srand(time(NULL));
             do{
                 r1 = rand() % (10 + i);
@@ -61,6 +62,8 @@ int main(int argc, char* argv[]){
             return 0;
         }
     } // end for
+
+	// print ready queue
 	printf("====srunq====\n");
     printQueue(srunq);
 
@@ -141,6 +144,7 @@ void time_tick(int signo){
 	now_node = find_proc(srunq, run_pid);
 	nproc = now_node->proc;
 
+	// run out of cpu burst
 	if((time_quantum == 3) && (nproc->cpu_burst == 0)){
 		temp = dequeue(srunq);
 		enqueue(srunq, temp->proc);
@@ -150,12 +154,14 @@ void time_tick(int signo){
 
 	nproc->cpu_burst--;
 
+	// end of cpu burst before end of time quantum
 	if((time_quantum > 0) && (nproc->cpu_burst == 0)){
 		temp = dequeue(srunq);
-		enqueue(swaitq, temp->proc);
+		enqueue(srunq, temp->proc);
 		time_quantum = 3;
 	} 
 
+	// after 3 second
 	if(time_quantum == 0){
 		temp = dequeue(srunq);
 		enqueue(srunq, temp->proc);
@@ -172,6 +178,8 @@ int schedule(void){
 	// find proc from runq, according to the rr policy
 	node* temp;
 	temp = srunq->front;
+
+	// reset time quantum
 	if(time_quantum == 0) time_quantum = 3;
 
     return temp->proc->pid;
